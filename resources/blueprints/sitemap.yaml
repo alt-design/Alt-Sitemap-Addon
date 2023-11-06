@@ -14,3 +14,14 @@ sections:
             visibility: visible
             replicator_preview: true
             hide_display: false
+        - handle: exclude_from_sitemap
+          field:
+            default: false
+            type: toggle
+            display: 'Exclude from sitemap?'
+            icon: toggle
+            listable: hidden
+            instructions_position: above
+            visibility: visible
+            replicator_preview: true
+            hide_display: false

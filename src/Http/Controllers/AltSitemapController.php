@@ -53,6 +53,11 @@ class AltSitemapController
         $site_url = $request->getSchemeAndHttpHost();
         $entries = Entry::all();
         foreach ($entries as $entry) {
+            // skip if to be excluded
+            if ($entry->exclude_from_sitemap == true) {
+                continue;
+            }
+
             //check if entry collection matches setting[0], if so apply setting[1] as priority
             $priority = 0.5;
             $entryCollection = $entry->collection->handle;
