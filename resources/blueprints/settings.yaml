@@ -1,0 +1,58 @@
+title: Settings
+tabs:
+  main:
+    display: Main
+    sections:
+      -
+        fields:
+          -
+            handle: default_collection_priorities
+            field:
+              collapse: false
+              previews: true
+              fullscreen: true
+              sets:
+                new_set_group:
+                  display: 'New Set Group'
+                  instructions: null
+                  icon: null
+                  sets:
+                    collection_priority:
+                      display: 'Collection Priority'
+                      instructions: null
+                      icon: null
+                      fields:
+                        -
+                          handle: collection
+                          field:
+                            max_items: 1
+                            mode: select
+                            type: collections
+                            display: Collection
+                            icon: collections
+                            listable: hidden
+                            instructions_position: above
+                            visibility: visible
+                            replicator_preview: true
+                            hide_display: false
+                        -
+                          handle: priority
+                          field:
+                            type: float
+                            display: Priority
+                            icon: float
+                            instructions: 'From 0.0 (lowest priority) to 1.0 (highest priority)'
+                            listable: hidden
+                            instructions_position: above
+                            visibility: visible
+                            replicator_preview: true
+                            hide_display: false
+              type: replicator
+              display: 'Default Collection Priorities'
+              icon: replicator
+              instructions: 'Select a collection and add a default sitemap priority for the entire collection'
+              listable: hidden
+              instructions_position: above
+              visibility: visible
+              replicator_preview: true
+              hide_display: false
