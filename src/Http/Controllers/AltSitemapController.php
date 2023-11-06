@@ -61,6 +61,8 @@ class AltSitemapController
                     $priority = $setting[1];
                 }
             }
+            // override with priority from entry if set
+            $priority = $entry->sitemap_priority ?? $priority;
             $items[] = array($entry->url, $entry->lastModified()->format('Y-m-d\TH:i:sP'), $priority);
         }
 

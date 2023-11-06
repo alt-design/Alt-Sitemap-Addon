@@ -1,0 +1,16 @@
+sections:
+  alt_sitemap:
+    display: "Alt Sitemap"
+    fields:
+        -
+          handle: sitemap_priority
+          field:
+            type: float
+            display: 'Sitemap Priority'
+            icon: float
+            instructions: 'From 0.0 (lowest priority) to 1.0 (highest priority)'
+            listable: hidden
+            instructions_position: above
+            visibility: visible
+            replicator_preview: true
+            hide_display: false

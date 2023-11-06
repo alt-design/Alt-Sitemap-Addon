@@ -2,8 +2,12 @@
 
 namespace AltDesign\AltSitemap;
 
+use AltDesign\AltSitemap\Events\Sitemap;
+
+use Illuminate\Support\Facades\Event;
 use Statamic\Facades\CP\Nav;
 use Statamic\Facades\Permission;
+
 use Statamic\Providers\AddonServiceProvider;
 
 class ServiceProvider extends AddonServiceProvider
@@ -30,10 +34,16 @@ class ServiceProvider extends AddonServiceProvider
         Permission::register('view alt-sitemap')
             ->label('View Alt Sitemap Settings');
     }
+
+    public function registerEvents()
+    {
+        Event::subscribe(Sitemap::class);
+    }
+
     public function bootAddon()
     {
         $this->addToNav();
         $this->registerPermissions();
-        //$this->registerEvents();
+        $this->registerEvents();
     }
 }
