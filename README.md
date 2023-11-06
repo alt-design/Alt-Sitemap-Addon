@@ -1,14 +1,12 @@
 # Alt Sitemap
 
-> Alt Sitemap is a Statamic addon that does something pretty neat.
+> Alt Sitemap is a Statamic addon for creating sitemaps to help search engines discover URLs on your site
 
 ## Features
 
-This addon does:
-
-- This
-- And this
-- And even this
+- Create basic sitemaps detailing <loc> <lastmod> and <priority> of all entries in your Statamic site.
+- Set priority of collections
+- Set priority of entries
 
 ## How to Install
 
@@ -20,4 +18,8 @@ composer require alt-design/alt-sitemap
 
 ## How to Use
 
-Here's where you can explain how to use this wonderful addon.
+After installation, access your sitemap at /sitemap.xml
+Set collection priorities in CP > Tools > Alt Sitemap. Select collection and priority value.
+Set entry priorities in the entry under the Alt Sitemap tab. Entry priorities will override Collection priorities.
+Priorities are set as 0.5 by default.
+
