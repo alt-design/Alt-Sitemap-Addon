@@ -61,7 +61,7 @@ class AltSitemapController
             //check if entry collection matches setting[0], if so apply setting[1] as priority
             $priority = 0.5;
             $entryCollection = $entry->collection->handle;
-            foreach ($settings as $setting) {
+            foreach ($settings ?? [] as $setting) {
                 if ($entryCollection == $setting[0]) {
                     $priority = $setting[1];
                 }
