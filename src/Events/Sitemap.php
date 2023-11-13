@@ -46,8 +46,15 @@ class Sitemap
         $oldDirectory = Blueprint::directory();
 
         $blueprint = Blueprint::setDirectory(__DIR__ . '/../../resources/blueprints')->find('sitemap');
-        $blueprintReady = $event->blueprint->contents();
-        $blueprintReady['tabs'] = array_merge($blueprintReady['tabs'], $blueprint->contents()['tabs']);
+
+        // Check if they've set the event settings, continue if not
+        if(!empty($event->blueprint)) {
+            $blueprintReady = $event->blueprint->contents();
+            $blueprintReady['tabs'] = array_merge($blueprintReady['tabs'], $blueprint->contents()['tabs']);
+        } else {
+            $blueprintReady = $blueprint->contents();
+        }
+
 
         // Set the contents
         $event->blueprint->setContents($blueprintReady);
