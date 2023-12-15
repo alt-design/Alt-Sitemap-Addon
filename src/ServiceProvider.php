@@ -13,13 +13,14 @@ use Statamic\Providers\AddonServiceProvider;
 class ServiceProvider extends AddonServiceProvider
 {
     protected $routes = [
-        'web' => __DIR__.'/../routes/web.php',
-        'cp' => __DIR__.'/../routes/cp.php',
+        'web' => __DIR__ . '/../routes/web.php',
+        'cp' => __DIR__ . '/../routes/cp.php',
     ];
 
     public function addToNav()
     {
-        Nav::extend(function ($nav) {
+        Nav::extend(function ($nav)
+        {
             $nav->content('Alt Sitemap')
                 ->section('Tools')
                 ->can('view alt-sitemap')
