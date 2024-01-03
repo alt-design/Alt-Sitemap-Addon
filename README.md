@@ -7,7 +7,7 @@
 - Create basic sitemaps detailing <loc> <lastmod> and <priority> of all entries in your Statamic site.
 - Set priority of collections
 - Set priority of entries
-- - Exclude certain entries from the sitemap.
+- Exclude certain entries from the sitemap.
 
 ## How to Install
 
