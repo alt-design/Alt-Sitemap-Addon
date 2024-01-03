@@ -1,7 +1,8 @@
 <?php namespace AltDesign\AltSitemap\Events;
 
 use Statamic\Events;
-use Statamic\Fields\BlueprintRepository as Blueprint;
+use Statamic\Fields\BlueprintRepository;
+use Statamic\Fields\Blueprint;
 
 /**
  * Class Sitemap
@@ -43,9 +44,9 @@ class Sitemap
     public function addSitemapData($event)
     {
         // Grab the old directory just in case
-        $oldDirectory = with(new Blueprint)->directory();
+        $oldDirectory = Blueprint::directory();
 
-        $blueprint = with(new Blueprint)->setDirectory(__DIR__ . '/../../resources/blueprints')->find('sitemap');
+        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__ . '/../../resources/blueprints')->find('sitemap');
 
         // Check if they've set the event settings, continue if not
         if(!empty($event->blueprint)) {
@@ -60,7 +61,7 @@ class Sitemap
         $event->blueprint->setContents($blueprintReady);
 
         // Reset the directory to the old one
-        with(new Blueprint)->setDirectory($oldDirectory);
+        Blueprint::setDirectory($oldDirectory);
     }
 
 
