@@ -1,6 +1,6 @@
 <?php namespace AltDesign\AltSitemap\Helpers;
 
-use Statamic\Facades\Blueprint;
+use Statamic\Fields\BlueprintRepository as Blueprint;
 use Statamic\Facades\YAML;
 use Statamic\Filesystem\Manager;
 

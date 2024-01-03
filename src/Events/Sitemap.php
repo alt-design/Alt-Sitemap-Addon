@@ -1,7 +1,7 @@
 <?php namespace AltDesign\AltSitemap\Events;
 
 use Statamic\Events;
-use Statamic\Facades\Blueprint;
+use Statamic\Fields\BlueprintRepository as Blueprint;
 
 /**
  * Class Sitemap
