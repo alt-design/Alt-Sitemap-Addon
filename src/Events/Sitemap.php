@@ -45,7 +45,7 @@ class Sitemap
         // Grab the old directory just in case
         $oldDirectory = Blueprint::directory();
 
-        $blueprint = Blueprint::setDirectory(__DIR__ . '/../../resources/blueprints')->find('sitemap');
+        $blueprint = with(new Blueprint)->setDirectory(__DIR__ . '/../../resources/blueprints')->find('sitemap');
 
         // Check if they've set the event settings, continue if not
         if(!empty($event->blueprint)) {
@@ -60,7 +60,7 @@ class Sitemap
         $event->blueprint->setContents($blueprintReady);
 
         // Reset the directory to the old one
-        Blueprint::setDirectory($oldDirectory);
+        with(new Blueprint)->setDirectory($oldDirectory);
     }
 
 
