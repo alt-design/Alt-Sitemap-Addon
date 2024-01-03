@@ -43,7 +43,7 @@ class Sitemap
     public function addSitemapData($event)
     {
         // Grab the old directory just in case
-        $oldDirectory = Blueprint::directory();
+        $oldDirectory = with(new Blueprint)->directory();
 
         $blueprint = with(new Blueprint)->setDirectory(__DIR__ . '/../../resources/blueprints')->find('sitemap');
 
