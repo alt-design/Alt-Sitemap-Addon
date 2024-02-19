@@ -61,7 +61,9 @@ class Sitemap
         $event->blueprint->setContents($blueprintReady);
 
         // Reset the directory to the old one
-        Blueprint::setDirectory($oldDirectory);
+        if($oldDirectory) {
+            Blueprint::setDirectory($oldDirectory);
+        }
     }
 
 
