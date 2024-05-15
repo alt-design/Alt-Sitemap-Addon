@@ -43,7 +43,7 @@ Also - check out our other addons!
 Send us a postcard from your hometown if you like this addon. We love getting mail from other cool peeps!
 
 Alt Design  
-St Helen's House
+St Helens House  
 Derby  
-DE1 3EE
+DE1 3EE  
 UK  
