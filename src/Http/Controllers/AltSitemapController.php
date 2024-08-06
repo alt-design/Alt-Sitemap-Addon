@@ -45,14 +45,15 @@ class AltSitemapController
         $excludeCollectionFromSitemap = $fields->values()->toArray()['exclude_collections_from_sitemap'];
 
         foreach ($defaultCollectionPriorities as $value) {
-                $collection = $value['collection'][0];
-                $priority = $value['priority'];
-                $settings[] = array($collection, $priority) ;
+            $collection = $value['collection'][0];
+            $priority = $value['priority'];
+            $settings[] = array($collection, $priority) ;
         }
 
         $site_url = $request->getSchemeAndHttpHost();
         $entries = Entry::all();
         foreach ($entries as $entry) {
+
             // skip if to be excluded
             if ($entry->exclude_from_sitemap == true) {
                 continue;
@@ -60,6 +61,11 @@ class AltSitemapController
 
             // skip if collection is to be excluded
             if (in_array($entry->collection->handle, $excludeCollectionFromSitemap)) {
+                continue;
+            }
+
+            // if the collection has no route setup, skip
+            if ($entry->url() === null) {
                 continue;
             }
 
