@@ -56,3 +56,8 @@ tabs:
               visibility: visible
               replicator_preview: true
               hide_display: false
+          -
+            handle: exclude_collections_from_sitemap
+            field:
+              type: collections
+              display: 'Exclude Collections from Sitemap'

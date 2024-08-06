@@ -8,6 +8,7 @@
 - Set priority of collections
 - Set priority of entries
 - Exclude certain entries from the sitemap.
+- Exclude entire collections from the sitemap.
 
 ## How to Install
 
