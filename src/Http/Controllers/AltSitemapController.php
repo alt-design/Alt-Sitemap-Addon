@@ -41,20 +41,31 @@ class AltSitemapController
         $data = new Data('settings');
         $blueprint = $data->getBlueprint(true);
         $fields = $blueprint->fields()->addValues($data->all())->preProcess();
-        $defaultCollectionPriotities = $fields->values()->toArray();
-        foreach ($defaultCollectionPriotities as $value) {
-            foreach ($value as $v){
-                $collection = $v['collection'][0];
-                $priority = $v['priority'];
-                $settings[] = array($collection, $priority) ;
-            }
+        $defaultCollectionPriorities = $fields->values()->toArray()['default_collection_priorities'];
+        $excludeCollectionFromSitemap = $fields->values()->toArray()['exclude_collections_from_sitemap'];
+
+        foreach ($defaultCollectionPriorities as $value) {
+            $collection = $value['collection'][0];
+            $priority = $value['priority'];
+            $settings[] = array($collection, $priority) ;
         }
 
         $site_url = $request->getSchemeAndHttpHost();
         $entries = Entry::all();
         foreach ($entries as $entry) {
+
             // skip if to be excluded
             if ($entry->exclude_from_sitemap == true) {
+                continue;
+            }
+
+            // skip if collection is to be excluded
+            if (in_array($entry->collection->handle, $excludeCollectionFromSitemap)) {
+                continue;
+            }
+
+            // if the collection has no route setup, skip
+            if ($entry->url() === null) {
                 continue;
             }
 
