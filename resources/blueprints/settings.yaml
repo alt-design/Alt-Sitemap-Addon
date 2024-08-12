@@ -47,6 +47,23 @@ tabs:
                             visibility: visible
                             replicator_preview: true
                             hide_display: false
+                        -
+                          handle: frequency
+                          field:
+                            options:
+                              hourly: Hourly
+                              daily: Daily
+                              weekly: Weekly
+                              monthly: Monthly
+                              yearly: Yearly
+                              always: Always
+                            placeholder: 'Please select...'
+                            type: select
+                            display: 'Frequency'
+                            icon: select
+                            visibility: visible
+                            replicator_preview: true
+                            hide_display: false
               type: replicator
               display: 'Default Collection Priorities'
               icon: replicator

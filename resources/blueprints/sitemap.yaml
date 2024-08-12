@@ -14,6 +14,31 @@ sections:
             visibility: visible
             replicator_preview: true
             hide_display: false
+        -
+            handle: sitemap_frequency
+            field:
+              options:
+                hourly: hourly
+                daily: Daily
+                weekly: Weekly
+                monthly: Monthly
+                yearly: Yearly
+                always: Always
+              taggable: false
+              push_tags: false
+              placeholder: 'Please select...'
+              multiple: false
+              clearable: false
+              searchable: true
+              cast_booleans: false
+              type: select
+              display: 'Frequency'
+              icon: select
+              listable: hidden
+              instructions_position: above
+              visibility: visible
+              replicator_preview: true
+              hide_display: false
         - handle: exclude_from_sitemap
           field:
             default: false

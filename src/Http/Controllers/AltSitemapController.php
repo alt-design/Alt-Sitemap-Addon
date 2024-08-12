@@ -47,7 +47,8 @@ class AltSitemapController
         foreach ($defaultCollectionPriorities as $value) {
             $collection = $value['collection'][0];
             $priority = $value['priority'];
-            $settings[] = array($collection, $priority) ;
+            $frequency = $value['frequency'];
+            $settings[] = array($collection, $priority, $frequency) ;
         }
 
         $site_url = $request->getSchemeAndHttpHost();
@@ -71,21 +72,30 @@ class AltSitemapController
 
             //check if entry collection matches setting[0], if so apply setting[1] as priority
             $priority = 0.5;
+            $frequency = 'yearly';
             $entryCollection = $entry->collection->handle;
             foreach ($settings ?? [] as $setting) {
                 if ($entryCollection == $setting[0]) {
                     $priority = $setting[1];
+                    $frequency = $setting[2];
                 }
+
             }
+
+            //echo $frequency;
+
             // override with priority from entry if set
             $priority = $entry->sitemap_priority ?? $priority;
-            $items[] = array($entry->url, $entry->lastModified()->format('Y-m-d\TH:i:sP'), $priority);
+            //$frequency = $entry->sitemap_frequency ?? $frequency;
+            $items[] = array($entry->url, $entry->lastModified()->format('Y-m-d\TH:i:sP'), $priority, $frequency);
         }
+
+        //print_r($items);
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
         foreach ($items as $item) {
-            $xml .='<url><loc>'.$site_url.$item[0].'</loc><lastmod>'.$item[1].'</lastmod><priority>'.$item[2].'</priority></url>';
+            $xml .='<url><loc>'.$site_url.$item[0].'</loc><lastmod>'.$item[1].'</lastmod><changefreq>'.$item[3].'</changefreq><priority>'.$item[2].'</priority></url>';
         }
         $xml .= '</urlset>';
         return Response::make($xml, 200, ['Content-Type' => 'application/xml']);
