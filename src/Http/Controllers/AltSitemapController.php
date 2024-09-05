@@ -50,7 +50,7 @@ class AltSitemapController
             $settings[] = array($collection, $priority) ;
         }
 
-        $site_url = $request->getSchemeAndHttpHost();
+        $site_url = url('');
         $entries = Entry::all();
         foreach ($entries as $entry) {
 
