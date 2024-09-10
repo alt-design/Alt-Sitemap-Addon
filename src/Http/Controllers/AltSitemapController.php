@@ -53,6 +53,10 @@ class AltSitemapController
         $site_url = url('');
         $entries = Entry::all();
         foreach ($entries as $entry) {
+            // Skip if the entry is not published
+            if (!$entry->published()) {
+                continue;
+            }
 
             // skip if to be excluded
             if ($entry->exclude_from_sitemap == true) {
