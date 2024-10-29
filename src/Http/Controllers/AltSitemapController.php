@@ -188,7 +188,7 @@ class AltSitemapController
             if (empty($url)) {
                 continue;
             }
-            $lastModified = $manualItem[1] ?? \Carbon\Carbon::now();
+            $lastModified = $manualItem[1]->format('c') ?? \Carbon\Carbon::now()->format('c');
             $priority = $manualItem[2] ?? 0.5;
             $items[] = [$url, $lastModified, $priority];
         }
