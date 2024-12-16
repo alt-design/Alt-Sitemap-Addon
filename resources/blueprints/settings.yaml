@@ -61,3 +61,59 @@ tabs:
             field:
               type: collections
               display: 'Exclude Collections from Sitemap'
+          -
+            handle: default_taxonomy_priorities
+            field:
+              collapse: false
+              previews: true
+              fullscreen: true
+              sets:
+                new_set_group:
+                  display: 'New Set Group'
+                  instructions: null
+                  icon: null
+                  sets:
+                    taxonomy_priority:
+                      display: 'Taxonomy Priority'
+                      instructions: null
+                      icon: null
+                      fields:
+                        -
+                          handle: taxonomy
+                          field:
+                            max_items: 1
+                            mode: select
+                            type: taxonomies
+                            display: Taxonomy
+                            icon: taxonomies
+                            listable: hidden
+                            instructions_position: above
+                            visibility: visible
+                            replicator_preview: true
+                            hide_display: false
+                        -
+                          handle: priority
+                          field:
+                            type: float
+                            display: Priority
+                            instructions: 'From 0.0 (lowest priority) to 1.0 (highest priority)'
+                            listable: hidden
+                            instructions_position: above
+                            visibility: visible
+                            replicator_preview: true
+                            hide_display: false
+              type: replicator
+              display: 'Default taxonomy priorities'
+              icon: replicator
+              instructions: 'Select a taxonomy and add a default sitemap priority for all terms in the taxonomy.'
+              listable: hidden
+              instructions_position: above
+              visibility: visible
+              replicator_preview: true
+              hide_display: false
+          -
+            handle: exclude_taxonomies_from_sitemap
+            field:
+              mode: select
+              type: taxonomies
+              display: 'Exclude Taxonomies from Sitemap'
