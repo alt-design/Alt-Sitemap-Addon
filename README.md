@@ -25,7 +25,49 @@ After installation, access your sitemap at /sitemap.xml
 - Set collection priorities in CP > Tools > Alt Sitemap. Select collection and priority value.
 - Set entry priorities in the entry under the Alt Sitemap tab. Entry priorities will override Collection priorities.  
 - Priorities are set as 0.5 by default.  
-- Exclude entries from the sitemap in the entry under the Alt Sitemap tab.  
+- Exclude entries from the sitemap in the entry under the Alt Sitemap tab.
+
+## Manual Entries
+Add a single, or mulitple items to the sitemap, using code similar to the following in a service provider's boot() (e.g. AppServiceProvider) method.
+
+Using registerItem() to register a single item.
+```
+$this->callAfterResolving(
+    AltSitemapController::class,
+    function ($altSitemapController) {
+        $altSitemapController->registerItem(
+            [
+                '/url-1',
+            ]
+        );
+    }
+);
+```
+
+Using registerItems() to register multiple items at once.
+```
+$this->callAfterResolving(
+     AltSitemapController::class,
+     function ($altSitemapController) {
+         $altSitemapController->registerItems(
+             [
+                 [
+                     '/url-1',
+                 ],
+                 [
+                     '/url-2',
+                     Carbon::create(2024,10,23,12,20,0, 'UTC'),
+                 ],
+                 [
+                     '/url-3',
+                     Carbon::create(2024,10,23,12,20,0, 'UTC'),
+                     0.8
+                 ],
+             ]
+         );
+     }
+ );
+```
 
 ## Questions etc
 
