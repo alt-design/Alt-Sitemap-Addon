@@ -4,9 +4,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Statamic\Facades\Entry;
 use AltDesign\AltSitemap\Helpers\Data;
+use Carbon\Carbon;
 
 class AltSitemapController
 {
+    /**
+     * @var array
+     */
+    private $manualItems = [];
+
     public function index()
     {
         $data = new Data('settings');
@@ -33,6 +39,28 @@ class AltSitemapController
         $data->setAll($fields->process()->values()->toArray());
 
         return true;
+    }
+
+    /**
+     * Add an explicit item to the sitemap.
+     *
+     * @param  array  $item
+     *
+     * @return void
+     */
+    public function registerItem(array $item) {
+        $this->manualItems[] = $item;
+    }
+
+    /**
+     * @param  array  $items
+     *
+     * @return void
+     */
+    public function registerItems(array $items) {
+        foreach ($items as $item) {
+            $this->registerItem($item);
+        }
     }
 
     public function generateSitemap(Request $request)
@@ -84,6 +112,16 @@ class AltSitemapController
             // override with priority from entry if set
             $priority = $entry->sitemap_priority ?? $priority;
             $items[] = array($entry->url, $entry->lastModified()->format('Y-m-d\TH:i:sP'), $priority);
+        }
+
+        foreach ($this->manualItems as $manualItem) {
+            $url = $manualItem[0] ?? null;
+            if (empty($url)) {
+                continue;
+            }
+            $lastModified = $manualItem[1]->format('c') ?? \Carbon\Carbon::now()->format('c');
+            $priority = $manualItem[2] ?? 0.5;
+            $items[] = [$url, $lastModified, $priority];
         }
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
