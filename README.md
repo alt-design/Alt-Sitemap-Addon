@@ -5,10 +5,10 @@
 ## Features
 
 - Create basic sitemaps detailing <loc> <lastmod> and <priority> of all entries in your Statamic site.
-- Set priority of collections
-- Set priority of entries
-- Exclude certain entries from the sitemap.
-- Exclude entire collections from the sitemap.
+- Set priority of entire collections/taxonomies
+- Set priority of specific entries/terms
+- Exclude certain entries/terms from the sitemap.
+- Exclude entire collections/taxonomies from the sitemap.
 
 ## How to Install
 
@@ -22,13 +22,15 @@ composer require alt-design/alt-sitemap
 
 After installation, access your sitemap at /sitemap.xml  
 
-- Set collection priorities in CP > Tools > Alt Sitemap. Select collection and priority value.
-- Set entry priorities in the entry under the Alt Sitemap tab. Entry priorities will override Collection priorities.  
+- Set priorities for entire collections/taxonomies in CP > Tools > Alt Sitemap.
+- Exclude entire collections/taxonomies in CP > Tools > Alt Sitemap.
+- Set entry/term priorities in the entry/term under the Alt Sitemap tab. Entry priorities will override collection/taxonomy priorities.  
 - Priorities are set as 0.5 by default.  
-- Exclude entries from the sitemap in the entry under the Alt Sitemap tab.
+- Exclude entries/terms from the sitemap in the entry under the Alt Sitemap tab.
+- <lastmod> is set to the last updated date of the entry/term.
 
 ## Manual Entries
-Add a single, or mulitple items to the sitemap, using code similar to the following in a service provider's boot() (e.g. AppServiceProvider) method.
+Add a single, or multiple items to the sitemap, using code similar to the following in a service provider's boot() (e.g. AppServiceProvider) method.
 
 Using registerItem() to register a single item.
 ```

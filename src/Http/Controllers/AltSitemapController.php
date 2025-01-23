@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Response;
 use Statamic\Facades\Entry;
 use AltDesign\AltSitemap\Helpers\Data;
 use Carbon\Carbon;
+use Statamic\Facades\Term;
 
 class AltSitemapController
 {
@@ -71,11 +72,19 @@ class AltSitemapController
         $fields = $blueprint->fields()->addValues($data->all())->preProcess();
         $defaultCollectionPriorities = $fields->values()->toArray()['default_collection_priorities'];
         $excludeCollectionFromSitemap = $fields->values()->toArray()['exclude_collections_from_sitemap'];
+        $defaultTaxonomyPriorities = $fields->values()->toArray()['default_taxonomy_priorities'];
+        $excludeTaxonomiesFromSitemap = $fields->values()->toArray()['exclude_taxonomies_from_sitemap'];
 
         foreach ($defaultCollectionPriorities as $value) {
             $collection = $value['collection'][0];
             $priority = $value['priority'];
             $settings[] = array($collection, $priority) ;
+        }
+
+        foreach ($defaultTaxonomyPriorities as $value) {
+            $taxonomy = $value['taxonomy'][0];
+            $priority = $value['priority'];
+            $settings[] = array($taxonomy, $priority) ;
         }
 
         $site_url = url('');
@@ -112,6 +121,33 @@ class AltSitemapController
             // override with priority from entry if set
             $priority = $entry->sitemap_priority ?? $priority;
             $items[] = array($entry->url, $entry->lastModified()->format('Y-m-d\TH:i:sP'), $priority);
+        }
+
+        // Add terms to sitemap
+        $terms = Term::all();
+        foreach ($terms as $term) {
+
+            // skip if term is to be excluded
+            if ($term->exclude_from_sitemap == true) {
+                continue;
+            }
+
+            // skip if taxonomy is to be excluded
+            if (in_array($term->taxonomy->handle, $excludeTaxonomiesFromSitemap)) {
+                continue;
+            }
+
+            //check if term taxonomy matches setting[0], if so apply setting[1] as priority
+            $priority = 0.5;
+            $termTaxonomy = $term->taxonomy->handle;
+            foreach ($settings ?? [] as $setting) {
+                if ($termTaxonomy == $setting[0]) {
+                    $priority = $setting[1];
+                }
+            }
+            // override with priority from entry if set
+            $priority = $term->sitemap_priority ?? $priority;
+            $items[] = array($term->url, $term->lastModified()->format('Y-m-d\TH:i:sP'), $priority);
         }
 
         foreach ($this->manualItems as $manualItem) {
