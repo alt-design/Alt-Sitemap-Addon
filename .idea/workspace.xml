@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="16c5a50f-1168-452a-810e-dcfe71a231eb" name="Changes" comment="Exclude collections with no route set up (currently showing as duplicates of site url)">
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/blueprints/settings.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/resources/blueprints/settings.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Events/Sitemap.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Events/Sitemap.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Http/Controllers/AltSitemapController.php" beforeDir="false" afterPath="$PROJECT_DIR$/src/Http/Controllers/AltSitemapController.php" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings" synchronizationState="SYNCHRONIZE">
+    <pharConfigPath>$PROJECT_DIR$/composer.json</pharConfigPath>
+    <execution />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="PhpWorkspaceProjectConfiguration" interpreter_name="/opt/homebrew/Cellar/php/8.2.3/bin/php" />
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 4
+}</component>
+  <component name="ProjectId" id="2XfscmQkFGMyjLaV5unH38AUcKr" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "/Users/altdesign/Desktop/alt-sitemap/src",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src" />
+      <recent name="$PROJECT_DIR$/resources" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-php-predefined-ba97393d7c68-6f8e3395a2b4-com.jetbrains.php.sharedIndexes-PS-233.15026.12" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="16c5a50f-1168-452a-810e-dcfe71a231eb" name="Changes" comment="" />
+      <created>1699031549177</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1699031549177</updated>
+      <workItem from="1699031550279" duration="1025000" />
+      <workItem from="1699271582745" duration="4605000" />
+      <workItem from="1700137029939" duration="621000" />
+      <workItem from="1700235903478" duration="45000" />
+      <workItem from="1700570939887" duration="4664000" />
+      <workItem from="1722951838526" duration="3653000" />
+      <workItem from="1723133156444" duration="1211000" />
+    </task>
+    <task id="LOCAL-00001" summary="Set priority per collection in cp">
+      <option name="closed" value="true" />
+      <created>1699279920916</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1699279920916</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Set priority per entry in cp">
+      <option name="closed" value="true" />
+      <created>1699279972039</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1699279972039</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Allow entries to be excluded from sitemap">
+      <option name="closed" value="true" />
+      <created>1699283107652</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1699283107652</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Allow collections to be excluded from sitemap">
+      <option name="closed" value="true" />
+      <created>1722956506170</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1722956506170</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Exclude collections with no route set up (currently showing as duplicates of site url)">
+      <option name="closed" value="true" />
+      <created>1722958253460</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1722958253460</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Set priority per collection in cp" />
+    <MESSAGE value="Set priority per entry in cp" />
+    <MESSAGE value="Allow entries to be excluded from sitemap" />
+    <MESSAGE value="Allow collections to be excluded from sitemap" />
+    <MESSAGE value="Exclude collections with no route set up (currently showing as duplicates of site url)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Exclude collections with no route set up (currently showing as duplicates of site url)" />
+  </component>
+</project>

@@ -4,6 +4,7 @@ use Statamic\Events;
 use Statamic\Facades\Blink;
 use Statamic\Fields\BlueprintRepository;
 use Statamic\Fields\Blueprint;
+use Statamic\Events\TermBlueprintFound;
 
 /**
  * Class Sitemap
@@ -23,6 +24,7 @@ class Sitemap
      */
     protected $events = [
         Events\EntryBlueprintFound::class => 'addSitemapData',
+        Events\TermBlueprintFound::class => 'addSitemapData',
     ];
 
     /**
@@ -34,6 +36,7 @@ class Sitemap
     public function subscribe($events)
     {
         $events->listen(Events\EntryBlueprintFound::class, self::class.'@'.'addSitemapData');
+        $events->listen(Events\TermBlueprintFound::class, self::class.'@'.'addSitemapData');
     }
 
     /**
