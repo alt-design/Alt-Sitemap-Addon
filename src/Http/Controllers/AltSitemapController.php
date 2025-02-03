@@ -14,9 +14,6 @@ use Statamic\Facades\Term;
 
 class AltSitemapController
 {
-    /**
-     * @var array
-     */
     private $manualItems = [];
 
     public function index()
@@ -24,6 +21,7 @@ class AltSitemapController
         $data = new Data('settings');
 
         $blueprint = $data->getBlueprint(true);
+
         $fields = $blueprint->fields()->addValues($data->all())->preProcess();
 
         return view('alt-sitemap::index', [
@@ -80,10 +78,10 @@ class AltSitemapController
 
     private function generateEloquentSitemap(Request $request)
     {
-        //get blueprint setting values
         $data = new Data('settings');
         $blueprint = $data->getBlueprint(true);
         $fields = $blueprint->fields()->addValues($data->all())->preProcess();
+
         $defaultCollectionPriorities = $fields->values()->toArray()['default_collection_priorities'];
         $excludeCollectionFromSitemap = $fields->values()->toArray()['exclude_collections_from_sitemap'];
         $defaultTaxonomyPriorities = $fields->values()->toArray()['default_taxonomy_priorities'];
@@ -101,9 +99,7 @@ class AltSitemapController
              $settings[] = array($taxonomy, $priority) ;
          }
 
-        // $site_url = url('');
         $site_url = $request->getSchemeAndHttpHost();
-        // $entries = Entry::all();
 
         $items = [];
 
@@ -134,6 +130,7 @@ class AltSitemapController
 
         foreach ($entries as $entry) {
             $url = $entry['uri'];
+
             // Skip if the entry is not published
             if ($entry['published'] === false) {
                 continue;
@@ -189,6 +186,7 @@ class AltSitemapController
                     'slug' => $entry->slug,
                     'uri' => $entry->uri,
                     'taxonomy' => $entry->taxonomy,
+                    'exclude_from_sitemap' => $entry->exclude_from_sitemap ?? false,
                     'created_at' => Carbon::make($entry->created_at)->format('Y-m-d\TH:i:sP'),
                     'updated_at' => Carbon::make($entry->updated_at)->format('Y-m-d\TH:i:sP'),
                 ];
@@ -196,15 +194,16 @@ class AltSitemapController
 
         foreach ($terms as $term) {
             $url = $term['uri'];
+
             // skip if term is to be excluded
-//            if ($term->exclude_from_sitemap == true) {
-//                continue;
-//            }
-//
-//            // skip if taxonomy is to be excluded
-//            if (in_array($term->taxonomy->handle, $excludeTaxonomiesFromSitemap)) {
-//                continue;
-//            }
+            if ($term['exclude_from_sitemap'] == true) {
+                continue;
+            }
+
+            // skip if taxonomy is to be excluded
+            if (in_array($term['taxonomy'], $excludeTaxonomiesFromSitemap)) {
+                continue;
+            }
 
             // check if term taxonomy matches setting[0], if so apply setting[1] as priority
             $priority = 0.5;
