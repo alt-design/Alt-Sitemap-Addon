@@ -74,7 +74,6 @@ class AltSitemapController
         }
 
         return $this->generateFlatFileSitemap();
-
     }
 
     private function generateEloquentSitemap(Request $request): HttpResponse
@@ -91,13 +90,13 @@ class AltSitemapController
         foreach ($defaultCollectionPriorities as $value) {
             $collection = $value['collection'][0];
             $priority = $value['priority'];
-            $defaultCollectionSettings[] = [$collection, $priority];
+            $settings[] = [$collection, $priority];
         }
 
         foreach ($defaultTaxonomyPriorities as $value) {
             $taxonomy = $value['taxonomy'][0];
             $priority = $value['priority'];
-            $defaultTaxonomySettings[] = [$taxonomy, $priority];
+            $settings[] = [$taxonomy, $priority];
         }
 
         $site_url = $request->getSchemeAndHttpHost();
@@ -157,7 +156,7 @@ class AltSitemapController
             // $entryCollection = $entry->collection->handle;
             $entryCollection = $entry['collection'];
 
-            foreach ($defaultCollectionSettings ?? [] as $setting) {
+            foreach ($settings ?? [] as $setting) {
                 if ($entryCollection === $setting[0]) {
                     $priority = $setting[1];
                 }
@@ -210,7 +209,7 @@ class AltSitemapController
             $priority = 0.5;
             $termTaxonomy = $term['taxonomy'];
 
-            foreach ($defaultTaxonomySettings ?? [] as $setting) {
+            foreach ($settings ?? [] as $setting) {
                 if ($termTaxonomy === $setting[0]) {
                     $priority = $setting[1];
                 }
