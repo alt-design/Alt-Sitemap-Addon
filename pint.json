@@ -1,0 +1,35 @@
+{
+    "preset": "laravel",
+    "rules": {
+        "concat_space": {
+            "spacing": "one"
+        },
+        "no_unused_imports": true,
+        "array_indentation": true,
+        "no_useless_else": true,
+        "blank_line_before_statement": {
+            "statements": [
+                "break",
+                "continue",
+                "declare",
+                "for",
+                "foreach",
+                "if",
+                "return",
+                "throw",
+                "try",
+                "while"
+            ]
+        },
+        "ordered_imports": {
+            "imports_order": ["class", "function", "const"],
+            "sort_algorithm": "alpha"
+        },
+        "return_type_declaration": {
+            "space_before": "none"
+        },
+        "strict_comparison": true,
+        "trailing_comma_in_multiline": true
+    }
+}
+
