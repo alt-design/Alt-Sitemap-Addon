@@ -9,11 +9,13 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
 use Statamic\Entries\EntryCollection;
 use Statamic\Facades\Entry;
 use Statamic\Facades\Term;
+use Statamic\Fields\Fields;
 use Statamic\Taxonomies\TermCollection;
 
 class AltSitemapController
@@ -38,12 +40,13 @@ class AltSitemapController
     public function update(Request $request): bool
     {
         $data = new Data('settings');
-        // Set the fields etc
+
         $blueprint = $data->getBlueprint(true);
+
         $fields = $blueprint->fields()->addValues($request->all());
+
         $fields->validate();
 
-        // Save the data
         $data->setAll($fields->process()->values()->toArray());
 
         return true;
@@ -52,8 +55,7 @@ class AltSitemapController
     /**
      * Add an explicit item to the sitemap.
      *
-     * @return void
-     * @param array<int,mixed> $item
+     * @param  array<int,mixed>  $item
      */
     public function registerItem(array $item): void
     {
@@ -61,8 +63,7 @@ class AltSitemapController
     }
 
     /**
-     * @return void
-     * @param array<int,mixed> $items
+     * @param  array<int,mixed>  $items
      */
     public function registerItems(array $items): void
     {
@@ -73,25 +74,28 @@ class AltSitemapController
 
     public function generateSitemap(Request $request): HttpResponse
     {
+        $data = new Data('settings');
+
+        $blueprint = $data->getBlueprint(true);
+
+        $fields = $blueprint->fields()->addValues($data->all())->preProcess();
+
         if (config('statamic.eloquent-driver.entries.driver') === 'eloquent') {
-            return $this->generateEloquentSitemap($request);
+            return $this->generateEloquentSitemap($request, $fields);
         }
 
-        return $this->generateFlatFileSitemap();
+        return $this->generateFlatFileSitemap($request, $fields);
     }
 
-    private function generateEloquentSitemap(Request $request): HttpResponse
+    private function generateEloquentSitemap(Request $request, Fields $fields): HttpResponse
     {
-        $data = new Data('settings');
-        $blueprint = $data->getBlueprint(true);
-        $fields = $blueprint->fields()->addValues($data->all())->preProcess();
         $settings = [];
-
-        $defaultCollectionPriorities = $fields->values()->toArray()['default_collection_priorities'];
-        $defaultTaxonomyPriorities = $fields->values()->toArray()['default_taxonomy_priorities'];
 
         $excludeTaxonomiesFromSitemap = $fields->values()->toArray()['exclude_taxonomies_from_sitemap'];
         $excludeCollectionFromSitemap = $fields->values()->toArray()['exclude_collections_from_sitemap'];
+
+        $defaultCollectionPriorities = $fields->values()->toArray()['default_collection_priorities'];
+        $defaultTaxonomyPriorities = $fields->values()->toArray()['default_taxonomy_priorities'];
 
         foreach ($defaultCollectionPriorities as $value) {
             $collection = $value['collection'][0];
@@ -107,101 +111,71 @@ class AltSitemapController
 
         $site_url = $request->getSchemeAndHttpHost();
 
-        $items = [];
-
         $entries = $this->getEloquentEntries();
 
-        foreach ($entries as $entry) {
-            $url = $entry['uri'];
+        $entries = $entries->filter(function ($entry) use ($excludeCollectionFromSitemap) {
+            return $entry['published'] === true &&
+                $entry['uri'] !== null &&
+                $entry['exclude_from_sitemap'] === false &&
+                in_array($entry['collection'], $excludeCollectionFromSitemap) === false;
+        });
 
-            // Skip if the entry is not published
-            if ($entry['published'] === false) {
-                continue;
-            }
-
-            // skip if to be excluded
-            if ($entry['exclude_from_sitemap'] === true) {
-                continue;
-            }
-
-            // skip if collection is to be excluded
-            if (in_array($entry['collection'], $excludeCollectionFromSitemap)) {
-                continue;
-            }
-
-            // if the collection has no route setup, skip
-            if ($url === null) {
-                continue;
-            }
-
-            // check if entry collection matches setting[0], if so apply setting[1] as priority
+        $items = $entries->map(function ($entry) use ($settings) {
             $priority = 0.5;
-            // $entryCollection = $entry->collection->handle;
-            $entryCollection = $entry['collection'];
 
-            foreach ($settings ?? [] as $setting) {
-                if ($entryCollection === $setting[0]) {
+            foreach ($settings as $setting) {
+                if ($entry['collection'] === $setting[0]) {
                     $priority = $setting[1];
                 }
             }
 
-            // override with priority from entry if set
             $priority = $entry['sitemap_priority'] ?? $priority;
-            $items[] = [$url, $entry['updated_at'], $priority];
-        }
 
-        // Add terms to sitemap
+            return [$entry['uri'], $entry['updated_at'], $priority];
+        });
+
         if (config('statamic.eloquent-driver.terms.driver') === 'eloquent') {
             $terms = $this->getEloquentTerms();
 
-            foreach ($terms as $term) {
-                $url = $term['uri'];
-
-                // skip if term is to be excluded
-                if ($term['exclude_from_sitemap']) {
-                    continue;
-                }
-
-                // skip if taxonomy is to be excluded
-                if (in_array($term['taxonomy'], $excludeTaxonomiesFromSitemap)) {
-                    continue;
-                }
-
-                // check if term taxonomy matches setting[0], if so apply setting[1] as priority
+            $terms = $terms->filter(function ($term) use ($excludeTaxonomiesFromSitemap) {
+                return $term['exclude_from_sitemap'] === false && in_array($term['taxonomy'], $excludeTaxonomiesFromSitemap) === false;
+            })->each(function ($term) use (&$items, $settings) {
                 $priority = 0.5;
-                $termTaxonomy = $term['taxonomy'];
 
-                foreach ($settings ?? [] as $setting) {
-                    if ($termTaxonomy === $setting[0]) {
+                foreach ($settings as $setting) {
+                    if ($term['taxonomy'] === $setting[0]) {
                         $priority = $setting[1];
                     }
                 }
 
-                // override with priority from entry if set
-                $priority = $term->sitemap_priority ?? $priority;
-                $items[] = [$url, $term['updated_at'], $priority];
-            }
+                $priority = $term['sitemap_priority'] ?? $priority;
+
+                $items[] = [$term['uri'], $term['updated_at'], $priority];
+            });
         } else {
-            // Add terms to sitemap
             $terms = $this->getFlatFileTerms();
 
+            $terms = $terms->filter(function ($term) use ($excludeTaxonomiesFromSitemap) {
+                return $term->exclude_from_sitemap === false && in_array($term->taxonomy->handle, $excludeTaxonomiesFromSitemap) === false;
+            })->each(function ($term) use (&$items, $settings) {
+                $priority = 0.5;
+
+                foreach ($settings as $setting) {
+                    if ($term->taxonomy->handle === $setting[0]) {
+                        $priority = $setting[1];
+                    }
+                }
+
+                $priority = $term->sitemap_priority ?? $priority;
+
+                $items[] = [$term->url, $term->lastModified()->format('Y-m-d\TH:i:sP'), $priority];
+            });
+
             foreach ($terms as $term) {
-
-                // skip if term is to be excluded
-                if ($term->exclude_from_sitemap) {
-                    continue;
-                }
-
-                // skip if taxonomy is to be excluded
-                if (in_array($term->taxonomy->handle, $excludeTaxonomiesFromSitemap)) {
-                    continue;
-                }
-
-                // check if term taxonomy matches setting[0], if so apply setting[1] as priority
                 $priority = 0.5;
                 $termTaxonomy = $term->taxonomy->handle;
 
-                foreach ($settings ?? [] as $setting) {
+                foreach ($settings as $setting) {
                     if ($termTaxonomy === $setting[0]) {
                         $priority = $setting[1];
                     }
@@ -234,48 +208,30 @@ class AltSitemapController
         return Response::make($xml, 200, ['Content-Type' => 'application/xml']);
     }
 
-    private function generateFlatFileSitemap(): HttpResponse
+    private function generateFlatFileSitemap(Request $request, Fields $fields): HttpResponse
     {
-        $data = new Data('settings');
-        $blueprint = $data->getBlueprint(true);
-        $fields = $blueprint->fields()->addValues($data->all())->preProcess();
         $settings = [];
         $items = [];
 
         $excludeTaxonomiesFromSitemap = $fields->values()->toArray()['exclude_taxonomies_from_sitemap'];
         $excludeCollectionFromSitemap = $fields->values()->toArray()['exclude_collections_from_sitemap'];
 
-        // get blueprint setting values
         $site_url = url('');
         $entries = $this->getFlatFileEntries();
 
+        $entries = $entries->filter(function ($entry) use ($excludeCollectionFromSitemap) {
+            return $entry->published() === true &&
+                $entry->url() !== null &&
+                $entry->exclude_from_sitemap === false &&
+                in_array($entry->collection->handle, $excludeCollectionFromSitemap) === false;
+        });
+
         foreach ($entries as $entry) {
-            // Skip if the entry is not published
-            if (! $entry->published()) {
-                continue;
-            }
-
-            // skip if to be excluded
-            if ($entry->exclude_from_sitemap) {
-                continue;
-            }
-
-            // skip if collection is to be excluded
-            if (in_array($entry->collection->handle, $excludeCollectionFromSitemap)) {
-                continue;
-            }
-
-            // if the collection has no route setup, skip
-            if ($entry->url() === null) {
-                continue;
-            }
-
             // check if entry collection matches setting[0], if so apply setting[1] as priority
             $priority = 0.5;
-            $entryCollection = $entry->collection->handle;
 
-            foreach ($settings ?? [] as $setting) {
-                if ($entryCollection === $setting[0]) {
+            foreach ($settings as $setting) {
+                if ($entry->collection->handle === $setting[0]) {
                     $priority = $setting[1];
                 }
             }
@@ -284,26 +240,18 @@ class AltSitemapController
             $items[] = [$entry->url, $entry->lastModified()->format('Y-m-d\TH:i:sP'), $priority];
         }
 
-        // Add terms to sitemap
         $terms = Term::all();
 
+        $terms = $terms->filter(function ($term) use ($excludeTaxonomiesFromSitemap) {
+            return $term->exclude_from_sitemap === false && in_array($term->taxonomy->handle, $excludeTaxonomiesFromSitemap) === false;
+        });
+
         foreach ($terms as $term) {
-
-            // skip if term is to be excluded
-            if ($term->exclude_from_sitemap) {
-                continue;
-            }
-
-            // skip if taxonomy is to be excluded
-            if (in_array($term->taxonomy->handle, $excludeTaxonomiesFromSitemap)) {
-                continue;
-            }
-
             // check if term taxonomy matches setting[0], if so apply setting[1] as priority
             $priority = 0.5;
             $termTaxonomy = $term->taxonomy->handle;
 
-            foreach ($settings ?? [] as $setting) {
+            foreach ($settings as $setting) {
                 if ($termTaxonomy === $setting[0]) {
                     $priority = $setting[1];
                 }
@@ -335,7 +283,7 @@ class AltSitemapController
         return Response::make($xml, 200, ['Content-Type' => 'application/xml']);
     }
 
-    private function getEloquentTerms()
+    private function getEloquentTerms(): Collection
     {
         return DB::table('taxonomy_terms')
             ->select(
@@ -367,32 +315,29 @@ class AltSitemapController
         return Term::all();
     }
 
-    private function getEloquentEntries()
+    private function getEloquentEntries(): Collection
     {
-        return DB::table('entries')
-            ->select(
-                'id',
-                'uri',
-                'data->title as title',
-                'data->sitemap_priority as sitemap_priority',
-                'data->exclude_from_sitemap as exclude_from_sitemap',
-                'collection',
-                'updated_at',
-                'published'
-            )
-            ->get()
-            ->map(function ($entry) {
-                return [
-                    'id' => $entry->id,
-                    'title' => $entry->title,
-                    'uri' => $entry->uri,
-                    'sitemap_priority' => (int) $entry->sitemap_priority,
-                    'exclude_from_sitemap' => $entry->exclude_from_sitemap === 'true',
-                    'collection' => $entry->collection,
-                    'published' => $entry->published,
-                    'updated_at' => Carbon::make($entry->updated_at)->format('Y-m-d\TH:i:sP'),
-                ];
-            });
+        return DB::table('entries')->select(
+            'id',
+            'uri',
+            'data->title as title',
+            'data->sitemap_priority as sitemap_priority',
+            'data->exclude_from_sitemap as exclude_from_sitemap',
+            'published',
+            'collection',
+            'updated_at'
+        )->get()->map(function ($entry) {
+            return [
+                'id' => $entry->id,
+                'uri' => $entry->uri,
+                'title' => $entry->title,
+                'sitemap_priority' => (int) $entry->sitemap_priority,
+                'exclude_from_sitemap' => $entry->exclude_from_sitemap === 'true',
+                'published' => (bool) $entry->published,
+                'collection' => $entry->collection,
+                'updated_at' => Carbon::make($entry->updated_at)->format('Y-m-d\TH:i:sP'),
+            ];
+        });
     }
 
     private function getFlatFileEntries(): EntryCollection
