@@ -60,6 +60,14 @@ class Sitemap
             $blueprintReady = $blueprint->contents();
         }
 
+        // Intermittent issues with blueprints not being available, sanity check here - bail if we're missing what we need.
+        if(!$event->blueprint) {
+            if(!empty($oldDirectory)) {
+                Blueprint::setDirectory($oldDirectory);
+            }
+            
+            return;
+        }
 
         // Set the contents
         Blink::forget("blueprint-contents-{$event->blueprint->namespace()}-{$event->blueprint->handle()}");
