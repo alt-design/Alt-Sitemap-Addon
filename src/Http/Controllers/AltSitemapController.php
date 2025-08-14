@@ -201,7 +201,8 @@ class AltSitemapController
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
 
         foreach ($items as $item) {
-            $xml .= '<url><loc>' . $site_url . $item[0] . '</loc><lastmod>' . $item[1] . '</lastmod><priority>' . $item[2] . '</priority></url>';
+            $loc = htmlspecialchars($site_url . $item[0], ENT_QUOTES | ENT_XML1, 'UTF-8');
+            $xml .= '<url><loc>' . $loc . '</loc><lastmod>' . $item[1] . '</lastmod><priority>' . $item[2] . '</priority></url>';
         }
         $xml .= '</urlset>';
 
@@ -276,7 +277,8 @@ class AltSitemapController
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
 
         foreach ($items as $item) {
-            $xml .= '<url><loc>' . $site_url . $item[0] . '</loc><lastmod>' . $item[1] . '</lastmod><priority>' . $item[2] . '</priority></url>';
+            $loc = htmlspecialchars($site_url . $item[0], ENT_QUOTES | ENT_XML1, 'UTF-8');
+            $xml .= '<url><loc>' . $loc . '</loc><lastmod>' . $item[1] . '</lastmod><priority>' . $item[2] . '</priority></url>';
         }
         $xml .= '</urlset>';
 
