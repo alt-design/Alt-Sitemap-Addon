@@ -217,6 +217,21 @@ class AltSitemapController
         $excludeTaxonomiesFromSitemap = $fields->values()->toArray()['exclude_taxonomies_from_sitemap'];
         $excludeCollectionFromSitemap = $fields->values()->toArray()['exclude_collections_from_sitemap'];
 
+        $defaultCollectionPriorities = $fields->values()->toArray()['default_collection_priorities'];
+        $defaultTaxonomyPriorities = $fields->values()->toArray()['default_taxonomy_priorities'];
+
+        foreach ($defaultCollectionPriorities as $value) {
+            $collection = $value['collection'][0];
+            $priority = $value['priority'];
+            $settings[] = [$collection, $priority];
+        }
+
+        foreach ($defaultTaxonomyPriorities as $value) {
+            $taxonomy = $value['taxonomy'][0];
+            $priority = $value['priority'];
+            $settings[] = [$taxonomy, $priority];
+        }
+
         $site_url = url('');
         $entries = $this->getFlatFileEntries();
 
