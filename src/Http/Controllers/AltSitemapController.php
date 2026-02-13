@@ -109,7 +109,7 @@ class AltSitemapController
             $settings[] = [$taxonomy, $priority];
         }
 
-        $site_url = $request->getSchemeAndHttpHost();
+        $site_url = rtrim(url(''), '/');
 
         $entries = $this->getEloquentEntries();
 
@@ -232,7 +232,7 @@ class AltSitemapController
             $settings[] = [$taxonomy, $priority];
         }
 
-        $site_url = url('');
+        $site_url = rtrim(url(''), '/');
         $entries = $this->getFlatFileEntries();
 
         $entries = $entries->filter(function ($entry) use ($excludeCollectionFromSitemap) {

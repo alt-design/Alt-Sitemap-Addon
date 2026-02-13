@@ -10,6 +10,11 @@
 - Exclude certain entries/terms from the sitemap.
 - Exclude entire collections/taxonomies from the sitemap.
 
+## Requirements
+
+- **PHP** 8.1+ (PHP 8.3+ when using Statamic 6)
+- **Statamic** 4.x, 5.x, or 6.x
+
 ## How to Install
 
 You can search for this addon in the `Tools > Addons` section of the Statamic control panel and click **install**, or run the following command from your project root:

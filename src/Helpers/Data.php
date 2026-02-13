@@ -46,7 +46,7 @@ class Data
         $this->manager = new Manager();
         // Grab the current file we're working with
         $this->currentFile = $this->manager->disk()->get('content/alt-sitemap/' . $this->type . '.yaml');
-        $this->data = Yaml::parse($this->currentFile);
+        $this->data = Yaml::parse($this->currentFile) ?? [];
     }
 
     /**
