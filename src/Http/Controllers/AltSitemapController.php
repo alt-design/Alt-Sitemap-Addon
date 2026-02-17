@@ -4,31 +4,45 @@ declare(strict_types=1);
 
 namespace AltDesign\AltSitemap\Http\Controllers;
 
-use AltDesign\AltSitemap\Helpers\Data;
 use Carbon\Carbon;
-use Illuminate\Contracts\View\View;
+use Statamic\Facades\Term;
+use Illuminate\Support\Str;
+use Statamic\Facades\Entry;
+use Statamic\Fields\Fields;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response as HttpResponse;
+use Statamic\CP\PublishForm;
+use Facades\Statamic\Version;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Response;
+use Illuminate\Contracts\View\View;
 use Statamic\Entries\EntryCollection;
-use Statamic\Facades\Entry;
-use Statamic\Facades\Term;
-use Statamic\Fields\Fields;
+use AltDesign\AltSitemap\Helpers\Data;
 use Statamic\Taxonomies\TermCollection;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Http\Response as HttpResponse;
 
 class AltSitemapController
 {
     private array $manualItems = [];
 
-    public function index(): View
+    public function index(): View|PublishForm
     {
         $data = new Data('settings');
 
         $blueprint = $data->getBlueprint(true);
 
         $fields = $blueprint->fields()->addValues($data->all())->preProcess();
+
+        // Statamic >= V6
+        if(intval(Str::before(Version::get(), '.')) >= 6) {
+            $blueprint->setNamespace('alt-sitemap');
+
+            return PublishForm::make($blueprint)
+                ->title('Alt Sitemap')
+                ->icon(config('alt-sitemap.alt_sitemap_icon'))
+                ->values($fields->values()->toArray())
+                ->submittingTo(cp_route('alt-sitemap.update'), 'POST');
+        }
 
         return view('alt-sitemap::index', [
             'blueprint' => $blueprint->toPublishArray(),
@@ -109,7 +123,7 @@ class AltSitemapController
             $settings[] = [$taxonomy, $priority];
         }
 
-        $site_url = $request->getSchemeAndHttpHost();
+        $site_url = rtrim(url(''), '/');
 
         $entries = $this->getEloquentEntries();
 
@@ -232,7 +246,7 @@ class AltSitemapController
             $settings[] = [$taxonomy, $priority];
         }
 
-        $site_url = url('');
+        $site_url = rtrim(url(''), '/');
         $entries = $this->getFlatFileEntries();
 
         $entries = $entries->filter(function ($entry) use ($excludeCollectionFromSitemap) {
