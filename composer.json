@@ -9,7 +9,7 @@
     },
     "require": {
         "php": "^8.1",
-        "statamic/cms": "^4.0|^5.73.1|^6.0"
+        "statamic/cms": "^4.0|^5.73.16|^6.7.2"
     },
     "extra": {
         "statamic": {
