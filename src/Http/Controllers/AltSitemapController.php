@@ -362,7 +362,7 @@ class AltSitemapController
                 'id' => $entry->id,
                 'uri' => $entry->uri,
                 'title' => $entry->title,
-                'sitemap_priority' => (int) $entry->sitemap_priority,
+                'sitemap_priority' => (float) $entry->sitemap_priority,
                 'exclude_from_sitemap' => $entry->exclude_from_sitemap === 'true',
                 'published' => (bool) $entry->published,
                 'collection' => $entry->collection,
