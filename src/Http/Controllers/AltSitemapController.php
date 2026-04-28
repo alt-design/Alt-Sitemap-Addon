@@ -123,7 +123,7 @@ class AltSitemapController
             $settings[] = [$taxonomy, $priority];
         }
 
-        $site_url = rtrim(url(''), '/');
+        $site_url = rtrim(config('app.url'), '/');
 
         $entries = $this->getEloquentEntries();
 
@@ -246,7 +246,7 @@ class AltSitemapController
             $settings[] = [$taxonomy, $priority];
         }
 
-        $site_url = rtrim(url(''), '/');
+        $site_url = rtrim(config('app.url'), '/');
         $entries = $this->getFlatFileEntries();
 
         $entries = $entries->filter(function ($entry) use ($excludeCollectionFromSitemap) {
