@@ -9,6 +9,7 @@
 - Set priority of specific entries/terms
 - Exclude certain entries/terms from the sitemap.
 - Exclude entire collections/taxonomies from the sitemap.
+- Split large sitemaps into an index of per-collection/taxonomy child sitemaps.
 
 ## Requirements
 
@@ -27,12 +28,28 @@ composer require alt-design/alt-sitemap
 
 After installation, access your sitemap at /sitemap.xml  
 
+> **Only entries/terms with a public URL are listed.** A collection (or taxonomy) with no **Route** configured produces no URLs, so its entries will never appear in the sitemap — split or not. Set a route in CP > Collections > *your collection* > Configure Collection > Routing & URLs.
+
 - Set priorities for entire collections/taxonomies in CP > Tools > Alt Sitemap.
 - Exclude entire collections/taxonomies in CP > Tools > Alt Sitemap.
 - Set entry/term priorities in the entry/term under the Alt Sitemap tab. Entry priorities will override collection/taxonomy priorities.  
 - Priorities are set as 0.5 by default.  
 - Exclude entries/terms from the sitemap in the entry under the Alt Sitemap tab.
 - <lastmod> is set to the last updated date of the entry/term.
+
+## Splitting the Sitemap
+Very large sitemaps can be broken up so crawlers index them more reliably. Enable **Split into child sitemaps** in CP > Tools > Alt Sitemap. When enabled, `/sitemap.xml` becomes a sitemap index that links to smaller child sitemaps, each named by handle:
+
+```
+/sitemap-products.xml
+/sitemap-blog.xml
+/sitemap-brands.xml
+...
+```
+
+Choose which collections/taxonomies get their own child sitemap with **Collections/Taxonomies with their own sitemap**. Anything you don't select (and manually registered items) is bundled into a single `/sitemap-other.xml`. Leave both pickers empty to split every collection and taxonomy by its handle.
+
+Priorities and exclusions still apply throughout.
 
 ## Manual Entries
 Add a single, or multiple items to the sitemap, using code similar to the following in a service provider's boot() (e.g. AppServiceProvider) method.
