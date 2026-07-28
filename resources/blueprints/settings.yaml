@@ -4,6 +4,33 @@ tabs:
     display: Main
     sections:
       -
+        display: 'Sitemap Index'
+        fields:
+          -
+            handle: split_sitemap
+            field:
+              default: false
+              type: toggle
+              display: 'Split into child sitemaps'
+              instructions: 'Serve /sitemap.xml as an index linking to child sitemaps (e.g. /sitemap-products.xml). Helps large sites get crawled.'
+          -
+            handle: split_collections
+            field:
+              type: collections
+              display: 'Collections with their own sitemap'
+              instructions: 'Each selected collection gets a dedicated child sitemap (e.g. /sitemap-products.xml). Anything not selected shares /sitemap-other.xml. Leave empty to split every collection and taxonomy by its handle.'
+              if:
+                split_sitemap: true
+          -
+            handle: split_taxonomies
+            field:
+              mode: default
+              type: taxonomies
+              display: 'Taxonomies with their own sitemap'
+              instructions: 'Each selected taxonomy gets a dedicated child sitemap.'
+              if:
+                split_sitemap: true
+      -
         display: Collections
         fields:
           -

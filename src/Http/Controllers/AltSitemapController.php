@@ -88,117 +88,92 @@ class AltSitemapController
 
     public function generateSitemap(Request $request): HttpResponse
     {
-        $data = new Data('settings');
+        [$items, $siteUrl] = $this->collectItems();
 
-        $blueprint = $data->getBlueprint(true);
-
-        $fields = $blueprint->fields()->addValues($data->all())->preProcess();
-
-        if (config('statamic.eloquent-driver.entries.driver') === 'eloquent') {
-            return $this->generateEloquentSitemap($request, $fields);
+        if ($this->splitEnabled()) {
+            return $this->renderIndex($this->applySplitGroups($items), $siteUrl);
         }
 
-        return $this->generateFlatFileSitemap($request, $fields);
+        return $this->renderUrlset($items, $siteUrl);
     }
 
-    private function generateEloquentSitemap(Request $request, Fields $fields): HttpResponse
+    /**
+     * Serve a single child sitemap (e.g. /sitemap-products.xml) containing only
+     * the items for that collection/taxonomy handle.
+     */
+    public function generateChildSitemap(Request $request, string $group): HttpResponse
     {
-        $settings = [];
+        [$items, $siteUrl] = $this->collectItems();
 
-        $excludeTaxonomiesFromSitemap = $fields->values()->toArray()['exclude_taxonomies_from_sitemap'];
-        $excludeCollectionFromSitemap = $fields->values()->toArray()['exclude_collections_from_sitemap'];
+        $items = $this->applySplitGroups($items);
+        $items = array_values(array_filter($items, fn ($item) => $item[3] === $group));
 
-        $defaultCollectionPriorities = $fields->values()->toArray()['default_collection_priorities'];
-        $defaultTaxonomyPriorities = $fields->values()->toArray()['default_taxonomy_priorities'];
+        abort_if(empty($items), 404);
 
-        foreach ($defaultCollectionPriorities as $value) {
-            $collection = $value['collection'][0];
-            $priority = $value['priority'];
-            $settings[] = [$collection, $priority];
+        return $this->renderUrlset($items, $siteUrl);
+    }
+
+    private function splitEnabled(): bool
+    {
+        return (bool) ((new Data('settings'))->get('split_sitemap') ?? false);
+    }
+
+    /**
+     * Collections/taxonomies (by handle) the user chose to give their own child sitemap.
+     *
+     * @return array<int, string>
+     */
+    private function splitHandles(): array
+    {
+        $data = new Data('settings');
+
+        return array_merge(
+            $data->get('split_collections') ?? [],
+            $data->get('split_taxonomies') ?? [],
+        );
+    }
+
+    /**
+     * Re-bucket items into child sitemaps: chosen handles keep their own file,
+     * everything else shares /sitemap-other.xml. Empty selection = split all by handle.
+     *
+     * @param  array<int, array{0: string, 1: string, 2: mixed, 3: string}>  $items
+     * @return array<int, array{0: string, 1: string, 2: mixed, 3: string}>
+     */
+    private function applySplitGroups(array $items): array
+    {
+        $splitHandles = $this->splitHandles();
+
+        if (empty($splitHandles)) {
+            return $items;
         }
 
-        foreach ($defaultTaxonomyPriorities as $value) {
-            $taxonomy = $value['taxonomy'][0];
-            $priority = $value['priority'];
-            $settings[] = [$taxonomy, $priority];
-        }
-
-        $site_url = rtrim(url(''), '/');
-
-        $entries = $this->getEloquentEntries();
-
-        $entries = $entries->filter(function ($entry) use ($excludeCollectionFromSitemap) {
-            return $entry['published'] === true &&
-                $entry['uri'] !== null &&
-                $entry['exclude_from_sitemap'] === false &&
-                in_array($entry['collection'], $excludeCollectionFromSitemap) === false;
-        });
-
-        $items = $entries->map(function ($entry) use ($settings) {
-            $priority = 0.5;
-
-            foreach ($settings as $setting) {
-                if ($entry['collection'] === $setting[0]) {
-                    $priority = $setting[1];
-                }
+        return array_map(function ($item) use ($splitHandles) {
+            if (! in_array($item[3], $splitHandles, true)) {
+                $item[3] = 'other';
             }
 
-            $priority = $entry['sitemap_priority'] ?? $priority;
+            return $item;
+        }, $items);
+    }
 
-            return [$entry['uri'], $entry['updated_at'], $priority];
-        });
+    /**
+     * Build every sitemap item as [url, lastmod, priority, group].
+     * Group is the collection/taxonomy handle, used to bucket child sitemaps.
+     *
+     * @return array{0: array<int, array{0: string, 1: string, 2: mixed, 3: string}>, 1: string}
+     */
+    private function collectItems(): array
+    {
+        $data = new Data('settings');
+        $blueprint = $data->getBlueprint(true);
+        $fields = $blueprint->fields()->addValues($data->all())->preProcess();
 
-        if (config('statamic.eloquent-driver.terms.driver') === 'eloquent') {
-            $terms = $this->getEloquentTerms();
+        $siteUrl = rtrim(url(''), '/');
 
-            $terms = $terms->filter(function ($term) use ($excludeTaxonomiesFromSitemap) {
-                return $term['exclude_from_sitemap'] === false && in_array($term['taxonomy'], $excludeTaxonomiesFromSitemap) === false;
-            })->each(function ($term) use (&$items, $settings) {
-                $priority = 0.5;
-
-                foreach ($settings as $setting) {
-                    if ($term['taxonomy'] === $setting[0]) {
-                        $priority = $setting[1];
-                    }
-                }
-
-                $priority = $term['sitemap_priority'] ?? $priority;
-
-                $items[] = [$term['uri'], $term['updated_at'], $priority];
-            });
-        } else {
-            $terms = $this->getFlatFileTerms();
-
-            $terms = $terms->filter(function ($term) use ($excludeTaxonomiesFromSitemap) {
-                return $term->exclude_from_sitemap === false && in_array($term->taxonomy->handle, $excludeTaxonomiesFromSitemap) === false;
-            })->each(function ($term) use (&$items, $settings) {
-                $priority = 0.5;
-
-                foreach ($settings as $setting) {
-                    if ($term->taxonomy->handle === $setting[0]) {
-                        $priority = $setting[1];
-                    }
-                }
-
-                $priority = $term->sitemap_priority ?? $priority;
-
-                $items[] = [$term->url, $term->lastModified()->format('Y-m-d\TH:i:sP'), $priority];
-            });
-
-            foreach ($terms as $term) {
-                $priority = 0.5;
-                $termTaxonomy = $term->taxonomy->handle;
-
-                foreach ($settings as $setting) {
-                    if ($termTaxonomy === $setting[0]) {
-                        $priority = $setting[1];
-                    }
-                }
-                // override with priority from entry if set
-                $priority = $term->sitemap_priority ?? $priority;
-                $items[] = [$term->url, $term->lastModified()->format('Y-m-d\TH:i:sP'), $priority];
-            }
-        }
+        $items = config('statamic.eloquent-driver.entries.driver') === 'eloquent'
+            ? $this->collectEloquentItems($fields)
+            : $this->collectFlatFileItems($fields);
 
         foreach ($this->manualItems as $manualItem) {
             $url = $manualItem[0] ?? null;
@@ -206,50 +181,112 @@ class AltSitemapController
             if (empty($url)) {
                 continue;
             }
-            $lastModified = $manualItem[1]->format('c') ?? \Carbon\Carbon::now()->format('c');
+
+            $lastModified = isset($manualItem[1]) ? $manualItem[1]->format('c') : Carbon::now()->format('c');
             $priority = $manualItem[2] ?? 0.5;
-            $items[] = [$url, $lastModified, $priority];
+            $group = $manualItem[3] ?? 'other';
+            $items[] = [$url, $lastModified, $priority, $group];
         }
 
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>';
-        $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
-
-        foreach ($items as $item) {
-            $loc = htmlspecialchars($site_url . $item[0], ENT_QUOTES | ENT_XML1, 'UTF-8');
-            $xml .= '<url><loc>' . $loc . '</loc><lastmod>' . $item[1] . '</lastmod><priority>' . $item[2] . '</priority></url>';
-        }
-        $xml .= '</urlset>';
-
-        return Response::make($xml, 200, ['Content-Type' => 'application/xml']);
+        return [$items, $siteUrl];
     }
 
-    private function generateFlatFileSitemap(Request $request, Fields $fields): HttpResponse
+    /**
+     * Priorities are keyed by collection/taxonomy handle.
+     *
+     * @param  array<int, array{0: string, 1: mixed}>  $settings
+     */
+    private function priorityFor(string $handle, array $settings): mixed
+    {
+        $priority = 0.5;
+
+        foreach ($settings as $setting) {
+            if ($handle === $setting[0]) {
+                $priority = $setting[1];
+            }
+        }
+
+        return $priority;
+    }
+
+    /**
+     * @return array<int, array{0: string, 1: mixed}>
+     */
+    private function prioritySettings(array $values): array
     {
         $settings = [];
+
+        foreach ($values['default_collection_priorities'] as $value) {
+            $settings[] = [$value['collection'][0], $value['priority']];
+        }
+
+        foreach ($values['default_taxonomy_priorities'] as $value) {
+            $settings[] = [$value['taxonomy'][0], $value['priority']];
+        }
+
+        return $settings;
+    }
+
+    /**
+     * @return array<int, array{0: string, 1: string, 2: mixed, 3: string}>
+     */
+    private function collectEloquentItems(Fields $fields): array
+    {
         $items = [];
+        $values = $fields->values()->toArray();
+        $settings = $this->prioritySettings($values);
 
-        $excludeTaxonomiesFromSitemap = $fields->values()->toArray()['exclude_taxonomies_from_sitemap'];
-        $excludeCollectionFromSitemap = $fields->values()->toArray()['exclude_collections_from_sitemap'];
+        $excludeTaxonomiesFromSitemap = $values['exclude_taxonomies_from_sitemap'];
+        $excludeCollectionFromSitemap = $values['exclude_collections_from_sitemap'];
 
-        $defaultCollectionPriorities = $fields->values()->toArray()['default_collection_priorities'];
-        $defaultTaxonomyPriorities = $fields->values()->toArray()['default_taxonomy_priorities'];
+        $entries = $this->getEloquentEntries()->filter(function ($entry) use ($excludeCollectionFromSitemap) {
+            return $entry['published'] === true &&
+                $entry['uri'] !== null &&
+                $entry['exclude_from_sitemap'] === false &&
+                in_array($entry['collection'], $excludeCollectionFromSitemap) === false;
+        });
 
-        foreach ($defaultCollectionPriorities as $value) {
-            $collection = $value['collection'][0];
-            $priority = $value['priority'];
-            $settings[] = [$collection, $priority];
+        foreach ($entries as $entry) {
+            $priority = $entry['sitemap_priority'] ?? $this->priorityFor($entry['collection'], $settings);
+            $items[] = [$entry['uri'], $entry['updated_at'], $priority, $entry['collection']];
         }
 
-        foreach ($defaultTaxonomyPriorities as $value) {
-            $taxonomy = $value['taxonomy'][0];
-            $priority = $value['priority'];
-            $settings[] = [$taxonomy, $priority];
+        if (config('statamic.eloquent-driver.terms.driver') === 'eloquent') {
+            $terms = $this->getEloquentTerms()->filter(function ($term) use ($excludeTaxonomiesFromSitemap) {
+                return $term['exclude_from_sitemap'] === false && in_array($term['taxonomy'], $excludeTaxonomiesFromSitemap) === false;
+            });
+
+            foreach ($terms as $term) {
+                $priority = $term['sitemap_priority'] ?? $this->priorityFor($term['taxonomy'], $settings);
+                $items[] = [$term['uri'], $term['updated_at'], $priority, $term['taxonomy']];
+            }
+        } else {
+            $terms = $this->getFlatFileTerms()->filter(function ($term) use ($excludeTaxonomiesFromSitemap) {
+                return $term->exclude_from_sitemap === false && in_array($term->taxonomy->handle, $excludeTaxonomiesFromSitemap) === false;
+            });
+
+            foreach ($terms as $term) {
+                $priority = $term->sitemap_priority ?? $this->priorityFor($term->taxonomy->handle, $settings);
+                $items[] = [$term->url, $term->lastModified()->format('Y-m-d\TH:i:sP'), $priority, $term->taxonomy->handle];
+            }
         }
 
-        $site_url = rtrim(url(''), '/');
-        $entries = $this->getFlatFileEntries();
+        return $items;
+    }
 
-        $entries = $entries->filter(function ($entry) use ($excludeCollectionFromSitemap) {
+    /**
+     * @return array<int, array{0: string, 1: string, 2: mixed, 3: string}>
+     */
+    private function collectFlatFileItems(Fields $fields): array
+    {
+        $items = [];
+        $values = $fields->values()->toArray();
+        $settings = $this->prioritySettings($values);
+
+        $excludeTaxonomiesFromSitemap = $values['exclude_taxonomies_from_sitemap'];
+        $excludeCollectionFromSitemap = $values['exclude_collections_from_sitemap'];
+
+        $entries = $this->getFlatFileEntries()->filter(function ($entry) use ($excludeCollectionFromSitemap) {
             return $entry->published() === true &&
                 $entry->url() !== null &&
                 $entry->exclude_from_sitemap === false &&
@@ -257,59 +294,65 @@ class AltSitemapController
         });
 
         foreach ($entries as $entry) {
-            // check if entry collection matches setting[0], if so apply setting[1] as priority
-            $priority = 0.5;
-
-            foreach ($settings as $setting) {
-                if ($entry->collection->handle === $setting[0]) {
-                    $priority = $setting[1];
-                }
-            }
-            // override with priority from entry if set
-            $priority = $entry->sitemap_priority ?? $priority;
-            $items[] = [$entry->url, $entry->lastModified()->format('Y-m-d\TH:i:sP'), $priority];
+            $priority = $entry->sitemap_priority ?? $this->priorityFor($entry->collection->handle, $settings);
+            $items[] = [$entry->url, $entry->lastModified()->format('Y-m-d\TH:i:sP'), $priority, $entry->collection->handle];
         }
 
-        $terms = Term::all();
-
-        $terms = $terms->filter(function ($term) use ($excludeTaxonomiesFromSitemap) {
+        $terms = Term::all()->filter(function ($term) use ($excludeTaxonomiesFromSitemap) {
             return $term->exclude_from_sitemap === false && in_array($term->taxonomy->handle, $excludeTaxonomiesFromSitemap) === false;
         });
 
         foreach ($terms as $term) {
-            // check if term taxonomy matches setting[0], if so apply setting[1] as priority
-            $priority = 0.5;
-            $termTaxonomy = $term->taxonomy->handle;
-
-            foreach ($settings as $setting) {
-                if ($termTaxonomy === $setting[0]) {
-                    $priority = $setting[1];
-                }
-            }
-            // override with priority from entry if set
-            $priority = $term->sitemap_priority ?? $priority;
-            $items[] = [$term->url, $term->lastModified()->format('Y-m-d\TH:i:sP'), $priority];
+            $priority = $term->sitemap_priority ?? $this->priorityFor($term->taxonomy->handle, $settings);
+            $items[] = [$term->url, $term->lastModified()->format('Y-m-d\TH:i:sP'), $priority, $term->taxonomy->handle];
         }
 
-        foreach ($this->manualItems as $manualItem) {
-            $url = $manualItem[0] ?? null;
+        return $items;
+    }
 
-            if (empty($url)) {
-                continue;
-            }
-            $lastModified = $manualItem[1]->format('c') ?? \Carbon\Carbon::now()->format('c');
-            $priority = $manualItem[2] ?? 0.5;
-            $items[] = [$url, $lastModified, $priority];
-        }
-
+    /**
+     * @param  array<int, array{0: string, 1: string, 2: mixed, 3: string}>  $items
+     */
+    private function renderUrlset(array $items, string $siteUrl): HttpResponse
+    {
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
 
         foreach ($items as $item) {
-            $loc = htmlspecialchars($site_url . $item[0], ENT_QUOTES | ENT_XML1, 'UTF-8');
+            $loc = htmlspecialchars($siteUrl . $item[0], ENT_QUOTES | ENT_XML1, 'UTF-8');
             $xml .= '<url><loc>' . $loc . '</loc><lastmod>' . $item[1] . '</lastmod><priority>' . $item[2] . '</priority></url>';
         }
+
         $xml .= '</urlset>';
+
+        return Response::make($xml, 200, ['Content-Type' => 'application/xml']);
+    }
+
+    /**
+     * @param  array<int, array{0: string, 1: string, 2: mixed, 3: string}>  $items
+     */
+    private function renderIndex(array $items, string $siteUrl): HttpResponse
+    {
+        // ponytail: string-max lastmod per group; ISO-8601 timestamps sort chronologically.
+        $lastmods = [];
+
+        foreach ($items as $item) {
+            $group = $item[3];
+
+            if (! isset($lastmods[$group]) || $item[1] > $lastmods[$group]) {
+                $lastmods[$group] = $item[1];
+            }
+        }
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>';
+        $xml .= '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+        foreach ($lastmods as $group => $lastmod) {
+            $loc = htmlspecialchars($siteUrl . '/sitemap-' . $group . '.xml', ENT_QUOTES | ENT_XML1, 'UTF-8');
+            $xml .= '<sitemap><loc>' . $loc . '</loc><lastmod>' . $lastmod . '</lastmod></sitemap>';
+        }
+
+        $xml .= '</sitemapindex>';
 
         return Response::make($xml, 200, ['Content-Type' => 'application/xml']);
     }
