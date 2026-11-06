@@ -24,7 +24,7 @@ class ServiceProvider extends AddonServiceProvider
         Nav::extend(function ($nav)
         {
             $nav->content('Alt Sitemap')
-                ->section('Tools')
+                ->section('Alt Tools')
                 ->can('view alt-sitemap')
                 ->route('alt-sitemap.index')
                 ->icon(config('alt-sitemap.alt_sitemap_icon'));
