@@ -26,17 +26,18 @@ class AltToolsNav
         'seo' => ['SEO', 'search-magnifying-glass', 'seo-search-graph'],
         'spam' => ['Spam', 'mail-check', 'email-utility'],
         'privacy' => ['Privacy & security', 'security-lock', 'shield-key'],
+        'editing' => ['Editing', 'pencil', 'content-writing'],
     ];
 
     /**
      * Add a page to a group, when the current user is allowed to see it.
      *
      * @param  string  $group  A key of GROUPS.
-     * @param  string  $route  Control panel route name.
+     * @param  string|array{0: string, 1: mixed}  $route  Control panel route name, or the name and its parameters.
      * @param  string|null  $permission  Null when every control panel user may see the page.
      * @param  array{0: string, 1: string}  $icons  Statamic 6 and Statamic 4/5 icon names.
      */
-    public static function add(Nav $nav, string $group, string $label, string $route, ?string $permission, array $icons): void
+    public static function add(Nav $nav, string $group, string $label, string|array $route, ?string $permission, array $icons): void
     {
         if ($permission && ! User::current()?->can($permission)) {
             return;
@@ -44,7 +45,7 @@ class AltToolsNav
 
         [$groupLabel, $groupIcon, $legacyGroupIcon] = self::GROUPS[$group];
 
-        $item = $nav->item($label)->route($route)->icon(self::icon(...$icons));
+        $item = $nav->item($label)->route(...(array) $route)->icon(self::icon(...$icons));
 
         if ($permission) {
             $item->can($permission);
