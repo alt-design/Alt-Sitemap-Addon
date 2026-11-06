@@ -2,14 +2,13 @@
 
 namespace AltDesign\AltSitemap;
 
+use AltDesign\AltSitemap\Events\Sitemap;
+use AltDesign\AltSitemap\Support\AltToolsNav;
 use Facades\Statamic\Version;
-
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Statamic\Facades\CP\Nav;
 use Statamic\Facades\Permission;
-
-use Illuminate\Support\Facades\Event;
-use AltDesign\AltSitemap\Events\Sitemap;
 use Statamic\Providers\AddonServiceProvider;
 
 class ServiceProvider extends AddonServiceProvider
@@ -21,13 +20,8 @@ class ServiceProvider extends AddonServiceProvider
 
     public function addToNav()
     {
-        Nav::extend(function ($nav)
-        {
-            $nav->content('Alt Sitemap')
-                ->section('Alt Tools')
-                ->can('view alt-sitemap')
-                ->route('alt-sitemap.index')
-                ->icon(config('alt-sitemap.alt_sitemap_icon'));
+        Nav::extend(function ($nav) {
+            AltToolsNav::add($nav, 'seo', 'Alt Sitemap', 'alt-sitemap.index', 'view alt-sitemap', ['hierarchy', 'hierarchy-files']);
         });
     }
 
@@ -48,10 +42,10 @@ class ServiceProvider extends AddonServiceProvider
         $this->registerPermissions();
         $this->registerEvents();
 
-        // Statamic >= V6 - unbind the settings blueprint to remove the default settings page and permissions 
+        // Statamic >= V6 - unbind the settings blueprint to remove the default settings page and permissions
         // as we are handling this manually instead
-        if(intval(Str::before(Version::get(), '.')) >= 6) {
-            app()->offsetUnset("statamic.addons.alt-sitemap.settings_blueprint");
+        if (intval(Str::before(Version::get(), '.')) >= 6) {
+            app()->offsetUnset('statamic.addons.alt-sitemap.settings_blueprint');
         }
     }
 }

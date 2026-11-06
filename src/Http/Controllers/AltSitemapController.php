@@ -4,22 +4,22 @@ declare(strict_types=1);
 
 namespace AltDesign\AltSitemap\Http\Controllers;
 
+use AltDesign\AltSitemap\Helpers\Data;
 use Carbon\Carbon;
-use Statamic\Facades\Term;
-use Illuminate\Support\Str;
-use Statamic\Facades\Entry;
-use Statamic\Fields\Fields;
-use Illuminate\Http\Request;
-use Statamic\CP\PublishForm;
 use Facades\Statamic\Version;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Contracts\View\View;
-use Statamic\Entries\EntryCollection;
-use AltDesign\AltSitemap\Helpers\Data;
-use Statamic\Taxonomies\TermCollection;
 use Illuminate\Support\Facades\Response;
-use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Str;
+use Statamic\CP\PublishForm;
+use Statamic\Entries\EntryCollection;
+use Statamic\Facades\Entry;
+use Statamic\Facades\Term;
+use Statamic\Fields\Fields;
+use Statamic\Taxonomies\TermCollection;
 
 class AltSitemapController
 {
@@ -34,12 +34,12 @@ class AltSitemapController
         $fields = $blueprint->fields()->addValues($data->all())->preProcess();
 
         // Statamic >= V6
-        if(intval(Str::before(Version::get(), '.')) >= 6) {
+        if (intval(Str::before(Version::get(), '.')) >= 6) {
             $blueprint->setNamespace('alt-sitemap');
 
             return PublishForm::make($blueprint)
                 ->title('Alt Sitemap')
-                ->icon(config('alt-sitemap.alt_sitemap_icon'))
+                ->icon('hierarchy')
                 ->values($fields->values()->toArray())
                 ->submittingTo(cp_route('alt-sitemap.update'), 'POST');
         }
